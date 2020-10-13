@@ -22,6 +22,10 @@
                    position="before">
                 <field name="discount_fixed" groups="base.group_no_one"/>
             </xpath>
+            <xpath expr="//field[@name='amount_tax']"
+                   position="after">
+                <field name="amount_discount_fixed" />
+            </xpath>
         </field>
     </record>
 

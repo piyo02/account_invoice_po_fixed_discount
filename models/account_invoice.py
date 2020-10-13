@@ -10,19 +10,25 @@ from odoo.exceptions import ValidationError
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
+    amount_discount_fixed = fields.Monetary(string='Total Discount', store=True, readonly=True, compute='get_taxes_values')
+
     @api.multi
     def get_taxes_values(self):
-        self.ensure_one()
         vals = {}
+        amount_discount_fixed = 0
         for line in self.invoice_line_ids.filtered('discount_fixed'):
             vals[line] = {
                 'price_unit': line.price_unit,
                 'discount_fixed': line.discount_fixed,
             }
             price_unit = line.price_unit - line.discount_fixed
+            amount_discount_fixed += line.discount_fixed*line.quantity
             line.update({
                 'price_unit': price_unit,
                 'discount_fixed': 0.0,
+            })
+            line.invoice_id.update({
+                'amount_discount_fixed': amount_discount_fixed
             })
         tax_grouped = super(AccountInvoice, self).get_taxes_values()
         for line in vals.keys():
